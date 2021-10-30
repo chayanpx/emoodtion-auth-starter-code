@@ -5,11 +5,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 const MyTextInput = ({
   leftIcon,
   rightIcon,
-  iconColor = "#626262",
+  iconColor = "#30343F",
   inputStyle,
   containerStyle,
-  placeholderTextColor = "#c4c4c4",
+  placeholderTextColor = "#ccc",
   handlePasswordVisibility,
+  editable = true,
   ...rest
 }) => {
   return (
@@ -24,6 +25,7 @@ const MyTextInput = ({
       ) : null}
       <TextInput
         {...rest}
+        editable={editable}
         placeholderTextColor={placeholderTextColor}
         style={[styles.input, inputStyle]}
       />

@@ -5,10 +5,13 @@ import Constants from "expo-constants";
 import * as Google from "expo-google-app-auth";
 import firebase from "firebase";
 import Firebase from "../config/Firebase";
+import { LinearGradient } from "expo-linear-gradient";
+import { useTheme } from "react-native-paper";
 
 const auth = Firebase.auth();
 
 const SignInScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState(true);
@@ -29,6 +32,8 @@ const SignInScreen = ({ navigation }) => {
     try {
       if (email !== "" && password !== "") {
         await auth.signInWithEmailAndPassword(email, password);
+      } else {
+        setSigninError("Please fill up this form.");
       }
     } catch (error) {
       setSigninError(error.message);
@@ -50,7 +55,7 @@ const SignInScreen = ({ navigation }) => {
           result.idToken,
           result.accessToken
         );
-        Firebase.auth()
+        auth
           .signInWithCredential(credential) //Login to Firebase
           .catch((error) => {
             console.log(error);
@@ -60,12 +65,18 @@ const SignInScreen = ({ navigation }) => {
       }
     } catch ({ message }) {
       alert("login: Error:" + message);
+      setSigninError(message);
     }
   };
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <LinearGradient
+        // Background Linear Gradient
+        colors={["#D1D9E5", "#F0E4EB", "#E8B7D4"]}
+        style={styles.background}
+      />
+      <View style={[styles.header, { color: colors.title }]}>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>you've been missed !</Text>
       </View>
@@ -109,10 +120,12 @@ const SignInScreen = ({ navigation }) => {
           onChangeText={(text) => setPassword(text)}
           handlePasswordVisibility={handlePasswordVisibility}
         />
-        <Text style={styles.forgot}>Forgot password?</Text>
+        <Text style={[styles.forgot, { color: colors.subtitle }]}>
+          Forgot password?
+        </Text>
         <MyButton
           onPress={onSignin}
-          backgroundColor="pink"
+          backgroundColor={colors.primary}
           title="Sign In"
           tileColor="#fff"
           titleSize={16}
@@ -123,7 +136,7 @@ const SignInScreen = ({ navigation }) => {
         <View style={styles.line} />
         <MyButton
           onPress={onGoogleSignin}
-          backgroundColor="pink"
+          backgroundColor={colors.secondary}
           title="Sign In With Google"
           tileColor="#fff"
           titleSize={16}
@@ -133,13 +146,13 @@ const SignInScreen = ({ navigation }) => {
         />
       </View>
       <View style={styles.footer}>
-        <Text style={styles.footertitle}>
+        <Text style={[styles.footertitle, { color: colors.title }]}>
           Don’t have an account?{" "}
           <Text
             onPress={() => {
               navigation.navigate("SignUp");
             }}
-            style={styles.signup}
+            style={[styles.signup, { color: colors.secondary }]}
           >
             Sign up
           </Text>
@@ -152,6 +165,14 @@ const SignInScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: "white",
+  },
+  background: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: "100%",
   },
   header: {
     paddingHorizontal: 55,
@@ -165,17 +186,19 @@ const styles = StyleSheet.create({
     marginBottom: 200,
   },
   footer: {
-    height: 70,
-    backgroundColor: "white",
+    height: 65,
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
     fontSize: 36,
+    fontWeight: "600",
     textAlign: "left",
     marginBottom: 5,
   },
   subtitle: {
+    fontWeight: "600",
     fontSize: 20,
     textAlign: "left",
   },
@@ -186,17 +209,15 @@ const styles = StyleSheet.create({
   forgot: {
     alignSelf: "flex-end",
     fontSize: 14,
-    color: "#626262",
     marginRight: 55,
     marginBottom: 20,
   },
   signup: {
-    color: "salmon",
     fontWeight: "600",
   },
   line: {
     height: 2,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     width: "75%",
     marginBottom: 15,
   },

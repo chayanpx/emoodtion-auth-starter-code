@@ -14,7 +14,7 @@ export default function MyAuthStack() {
         headerStyle: {
           backgroundColor: "transparent",
         },
-        headerTintColor: "pink",
+        headerTintColor: "#111",
         headerTransparent: true,
         headerTitle: "",
         headerBackTitleVisible: false,

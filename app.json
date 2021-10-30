@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "emoodtion-starter-code",
-    "slug": "emoodtion-starter-code",
+    "name": "emoodtion-auth-starter-code",
+    "slug": "emoodtion-auth-starter-code",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MyButton, MyTextInput, MyErrorMessage } from "../components";
+import Constants from "expo-constants";
+import * as Google from "expo-google-app-auth";
+import firebase from "firebase";
 import Firebase from "../config/Firebase";
+import { LinearGradient } from "expo-linear-gradient";
+import { useTheme } from "react-native-paper";
 
 const auth = Firebase.auth();
 
 const SignUpScreen = ({ navigation }) => {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -37,18 +43,58 @@ const SignUpScreen = ({ navigation }) => {
 
   const onHandleSignup = async () => {
     try {
-      if (email !== "" && password !== "") {
-        await auth.createUserWithEmailAndPassword(email, password);
-        navigation.navigate("FirstTime");
+      if (email !== "" && password !== "" && confirm !== "") {
+        if (password == confirm) {
+          await auth.createUserWithEmailAndPassword(email, password);
+          navigation.navigate("FirstTime");
+        } else {
+          setSignupError("Password confirmation doesn't match password");
+        }
+      } else {
+        setSignupError("Please fill up this form.");
       }
     } catch (error) {
       setSignupError(error.message);
     }
   };
 
+  const onGoogleSignup = async () => {
+    try {
+      //await GoogleSignIn.askForPlayServicesAsync();
+      const result = await Google.logInAsync({
+        //return an object with result token and user
+        iosClientId: Constants.manifest.extra.IOS_KEY, //From app.json
+        // androidClientId: Constants.manifest.extra.ANDROIUD_KEY, //From app.json
+        scopes: ["profile", "email"],
+      });
+      if (result.type === "success") {
+        const credential = firebase.auth.GoogleAuthProvider.credential(
+          //Set the tokens to Firebase
+          result.idToken,
+          result.accessToken
+        );
+        auth
+          .signInWithCredential(credential) //Login to Firebase
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        //CANCEL
+      }
+    } catch ({ message }) {
+      alert("login: Error:" + message);
+      setSignupError(message);
+    }
+  };
+
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <LinearGradient
+        // Background Linear Gradient
+        colors={["#D1D9E5", "#F0E4EB", "#E8B7D4"]}
+        style={styles.background}
+      />
+      <View style={[styles.header, { color: colors.title }]}>
         <Text style={styles.title}>Hello Beatiful,</Text>
         <Text style={styles.subtitle}>
           Enter your information below or sign up with google.
@@ -115,7 +161,7 @@ const SignUpScreen = ({ navigation }) => {
         />
         <MyButton
           onPress={onHandleSignup}
-          backgroundColor="pink"
+          backgroundColor={colors.secondary}
           title="Sign Up"
           tileColor="#fff"
           titleSize={16}
@@ -125,10 +171,8 @@ const SignUpScreen = ({ navigation }) => {
         />
         <View style={styles.line} />
         <MyButton
-          onPress={() => {
-            console.log("sign up with google");
-          }}
-          backgroundColor="pink"
+          onPress={onGoogleSignup}
+          backgroundColor={colors.primary}
           title="Sign Up With Google"
           tileColor="#fff"
           titleSize={16}
@@ -138,13 +182,13 @@ const SignUpScreen = ({ navigation }) => {
         />
       </View>
       <View style={styles.footer}>
-        <Text style={styles.footertitle}>
+        <Text style={[styles.footertitle, { color: colors.title }]}>
           Already have an account,{" "}
           <Text
             onPress={() => {
               navigation.navigate("SignIn");
             }}
-            style={styles.signin}
+            style={[styles.signin, { color: colors.primary }]}
           >
             Sign in
           </Text>
@@ -158,6 +202,13 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  background: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: "100%",
+  },
   header: {
     paddingHorizontal: 55,
     marginTop: 150,
@@ -170,18 +221,20 @@ const styles = StyleSheet.create({
     marginBottom: 200,
   },
   footer: {
-    height: 70,
+    height: 65,
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
     fontSize: 36,
+    fontWeight: "600",
     textAlign: "left",
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 18,
+    fontWeight: "600",
     textAlign: "left",
   },
   footertitle: {
@@ -189,7 +242,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   signin: {
-    color: "salmon",
     fontWeight: "600",
   },
   line: {

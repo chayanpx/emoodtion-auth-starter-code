@@ -6,12 +6,12 @@ const MyErrorMessage = ({ error, visible }) => {
     return null;
   }
 
-  return <Text style={styles.errorText}>⚠️ {error} </Text>;
+  return <Text style={styles.errorText}>{error}</Text>;
 };
 
 const styles = StyleSheet.create({
   errorText: {
-    color: "red",
+    color: "#E90404",
     fontSize: 14,
     marginBottom: 15,
     marginHorizontal: 50,

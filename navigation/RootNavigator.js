@@ -14,8 +14,7 @@ const auth = Firebase.auth();
 export default function RootNavigator() {
   const { user, setUser } = useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = useState(true);
-  // const [checkProfile, setCheckProfile] = useState(false);
-  // console.log(user.providerData[0]);
+
   const currentUser = auth.currentUser;
 
   useEffect(() => {
