@@ -66,8 +66,6 @@ const SignUpScreen = ({ navigation }) => {
     }
   };
 
-  const currentUser = auth.currentUser;
-
   const onGoogleSignup = async () => {
     try {
       //await GoogleSignIn.askForPlayServicesAsync();
@@ -78,17 +76,6 @@ const SignUpScreen = ({ navigation }) => {
         scopes: ["profile", "email"],
       });
       if (result.type === "success") {
-        // currentUser
-        //   .updateProfile({
-        //     photoURL: `https://avatars.dicebear.com/api/micah/${currentUser.email}.svg`,
-        //   })
-        //   .then(() => {
-        //     // Update successful
-        //     // ...
-        //   })
-        //   .catch((error) => {
-        //     setError(error);
-        //   });
         const credential = firebase.auth.GoogleAuthProvider.credential(
           //Set the tokens to Firebase
           result.idToken,
@@ -96,6 +83,25 @@ const SignUpScreen = ({ navigation }) => {
         );
         auth
           .signInWithCredential(credential) //Login to Firebase
+          .then(() => {
+            const currentUser = auth.currentUser;
+            // console.log(currentUser);
+            db.collection("users")
+              .add({
+                auth_id: currentUser.uid,
+                avatarURL: `https://avatars.dicebear.com/api/micah/${currentUser.createdAt}.svg`,
+                firstName: null,
+                lastName: null,
+                birthday: null,
+                gender: null,
+              })
+              .then(() => {
+                console.log("Document successfully written!");
+              })
+              .catch((error) => {
+                console.error("Error writing document: ", error);
+              });
+          })
           .catch((error) => {
             console.log(error);
           });

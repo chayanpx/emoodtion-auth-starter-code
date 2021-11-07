@@ -12,7 +12,7 @@ import { MyButton, MyTextInput, MyErrorMessage } from "../components";
 import Constants from "expo-constants";
 import * as Google from "expo-google-app-auth";
 import firebase from "firebase";
-import Firebase from "../config/Firebase";
+import Firebase, { db } from "../config/Firebase";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 
@@ -20,8 +20,8 @@ const auth = Firebase.auth();
 
 const SignInScreen = ({ navigation }) => {
   const { colors } = useTheme();
-  const [email, setEmail] = useState("test1234@test.com");
-  const [password, setPassword] = useState("test1234");
+  const [email, setEmail] = useState("admin1234@test.com");
+  const [password, setPassword] = useState("admin1234");
   const [passwordVisibility, setPasswordVisibility] = useState(true);
   const [rightIcon, setRightIcon] = useState("eye");
   const [signinError, setSigninError] = useState("");
@@ -48,8 +48,6 @@ const SignInScreen = ({ navigation }) => {
     }
   };
 
-  const currentUser = auth.currentUser;
-
   const onGoogleSignin = async () => {
     try {
       //await GoogleSignIn.askForPlayServicesAsync();
@@ -60,7 +58,6 @@ const SignInScreen = ({ navigation }) => {
         scopes: ["profile", "email"],
       });
       if (result.type === "success") {
-        console.log("1", currentUser);
         const credential = firebase.auth.GoogleAuthProvider.credential(
           //Set the tokens to Firebase
           result.idToken,
@@ -69,19 +66,23 @@ const SignInScreen = ({ navigation }) => {
         auth
           .signInWithCredential(credential) //Login to Firebase
           .then(() => {
-            console.log("2", result.user.photoUrl);
-            result
-              .updateProfile({
-                photoURL: `https://avatars.dicebear.com/api/micah/${result.user.email}.svg`,
+            const currentUser = auth.currentUser;
+            // console.log(currentUser);
+            db.collection("users")
+              .add({
+                auth_id: currentUser.uid,
+                avatarURL: `https://avatars.dicebear.com/api/micah/${currentUser.createdAt}.svg`,
+                firstName: null,
+                lastName: null,
+                birthday: null,
+                gender: null,
               })
               .then(() => {
-                // Update successful
-                // ...
+                console.log("Document successfully written!");
               })
               .catch((error) => {
-                setError(error);
+                console.error("Error writing document: ", error);
               });
-            console.log("3", result.user.photoUrl);
           })
           .catch((error) => {
             console.log(error);

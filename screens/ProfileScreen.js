@@ -32,19 +32,72 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     if (currentUser.providerData[0].providerId == "google.com") {
-      console.log(currentUser.providerData);
-      // setAvatar(`https://avatars.dicebear.com/api/micah/${email}.svg`);
-      setIsLoading(false);
-    } else {
-      const query_users = db
-        .collection("users")
+      // console.log(currentUser.uid);
+      db.collection("users")
         .where("auth_id", "==", currentUser.uid)
         .limit(1)
         .get()
         .then((res) => {
           const [user] = res.docs;
-          console.log(user);
-          const { firstName, lastName, gender, birthday } = user.data();
+          // console.log(user);
+          const {
+            avatarURL,
+            firstName,
+            lastName,
+            gender,
+            birthday,
+          } = user.data();
+          setAvatar(avatarURL);
+          setFirstName(firstName);
+          setLastName(lastName);
+          if (gender == 1) {
+            setGender("male");
+            setGenderIcon("face");
+          } else if (gender == 2) {
+            setGender("female");
+            setGenderIcon("face-woman");
+          } else if (gender == 3) {
+            setGender("none");
+            setGenderIcon("incognito");
+          } else {
+            setGender(null);
+            setGenderIcon(null);
+          }
+          if (birthday == null) {
+            setBirthDate(null);
+            setBirthDateText(null);
+          } else {
+            setBirthDate(birthday.toDate());
+            setBirthDateText(
+              birthday.toDate().getDate() +
+                "/" +
+                birthday.toDate().getMonth() +
+                "/" +
+                birthday.toDate().getFullYear()
+            );
+          }
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.log("Error getting documents: ", error);
+        });
+      setIsLoading(false);
+    } else {
+      db.collection("users")
+        .where("auth_id", "==", currentUser.uid)
+        .limit(1)
+        .get()
+        .then((res) => {
+          const [user] = res.docs;
+          // console.log(user);
+          const {
+            avatarURL,
+            firstName,
+            lastName,
+            gender,
+            birthday,
+          } = user.data();
+          setAvatar(avatarURL);
           setFirstName(firstName);
           setLastName(lastName);
           if (gender == 1) {

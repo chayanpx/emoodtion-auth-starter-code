@@ -20,8 +20,20 @@ export default function MyFirstTimeStack() {
       }}
       initialRouteName="FirstTime"
     >
-      <FirstTimeStack.Screen name="FirstTime" component={FirstTimeScreen} />
-      <FirstTimeStack.Screen name="Main" component={MyMainBottomTab} />
+      <FirstTimeStack.Screen
+        name="FirstTime"
+        component={FirstTimeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FirstTimeStack.Screen
+        name="Main"
+        component={MyMainBottomTab}
+        options={{
+          headerShown: false,
+        }}
+      />
     </FirstTimeStack.Navigator>
   );
 }

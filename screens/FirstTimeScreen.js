@@ -67,7 +67,6 @@ const FirstTimeScreen = ({ navigation }) => {
       currentUser
         .updateProfile({
           displayName: name,
-          photoURL: avatar,
         })
         .then(() => {
           // Update successful
@@ -77,13 +76,21 @@ const FirstTimeScreen = ({ navigation }) => {
           setError(error);
         });
 
-      db.collection("users").add({
-        auth_id: currentUser.uid,
-        firstName: firstName,
-        lastName: lastName,
-        birthday: birthDate,
-        gender: gender,
-      });
+      db.collection("users")
+        .add({
+          auth_id: currentUser.uid,
+          avatarURL: avatar,
+          firstName: firstName,
+          lastName: lastName,
+          birthday: birthDate,
+          gender: gender,
+        })
+        .then(() => {
+          console.log("Document successfully written!");
+        })
+        .catch((error) => {
+          console.error("Error writing document: ", error);
+        });
       // Alert.alert("Done!");
       navigation.navigate("Main");
     } else {
@@ -94,7 +101,13 @@ const FirstTimeScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : "height" || Platform.OS === "android"
+          ? "padding"
+          : "height"
+      }
       style={styles.container}
     >
       <LinearGradient
