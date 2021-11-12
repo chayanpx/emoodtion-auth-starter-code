@@ -26,6 +26,7 @@ export default function RootNavigator() {
             ? setUser(authenticatedUser)
             : setUser(null));
           setIsLoading(false);
+          // console.log(authenticatedUser);
           // console.log(authenticatedUser.providerData[0]);
         } catch (error) {
           console.log(error);

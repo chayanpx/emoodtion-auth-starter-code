@@ -17,10 +17,9 @@ const ProfileScreen = () => {
   const { user } = useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = useState(true);
   const { colors } = useTheme();
-  const photoURL = user.photoURL;
   const currentUser = auth.currentUser;
   const [email, setEmail] = useState(currentUser.email);
-  const [name, setName] = useState(currentUser.displayName);
+  const [name, setName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("");
@@ -28,102 +27,48 @@ const ProfileScreen = () => {
   const [birthDate, setBirthDate] = useState(new Date());
   const [birthDateText, setBirthDateText] = useState("");
   const [avatar, setAvatar] = useState();
-  const [moods, setMoods] = useState([]);
-
   useEffect(() => {
-    if (currentUser.providerData[0].providerId == "google.com") {
-      // console.log(currentUser.uid);
-      db.collection("users")
-        .where("auth_id", "==", currentUser.uid)
-        .limit(1)
-        .get()
-        .then((res) => {
-          const [user] = res.docs;
-          // console.log(user);
-          const {
-            avatarURL,
-            firstName,
-            lastName,
-            gender,
-            birthday,
-          } = user.data();
-          setAvatar(avatarURL);
-          setFirstName(firstName);
-          setLastName(lastName);
-          if (gender == 1) {
+    const unsubscribe = db
+      .collection("users")
+      .where("auth_id", "==", currentUser.uid)
+      .onSnapshot(
+        {
+          includeMetadataChanges: true,
+        },
+        (querySnapshot) => {
+          const users = [];
+          querySnapshot.forEach((doc) => {
+            users.push(doc.data());
+          });
+          // console.log(users[0].auth_id);
+          setName(users[0].username);
+          setAvatar(users[0].avatarURL);
+          setFirstName(users[0].firstName);
+          setLastName(users[0].lastName);
+          if (users[0].gender == 1) {
             setGender("male");
             setGenderIcon("face");
-          } else if (gender == 2) {
+          } else if (users[0].gender == 2) {
             setGender("female");
             setGenderIcon("face-woman");
-          } else if (gender == 3) {
+          } else {
             setGender("none");
             setGenderIcon("incognito");
-          } else {
-            setGender(null);
-            setGenderIcon(null);
           }
-          if (birthday == null) {
-            setBirthDate(null);
-            setBirthDateText(null);
-          } else {
-            setBirthDate(birthday.toDate());
+          if (users[0].birthday != null) {
+            setBirthDate(users[0].birthday.toDate());
             setBirthDateText(
-              birthday.toDate().getDate() +
+              birthDate.getDate() +
                 "/" +
-                birthday.toDate().getMonth() +
+                birthDate.getMonth() +
                 "/" +
-                birthday.toDate().getFullYear()
+                birthDate.getFullYear()
             );
           }
           setIsLoading(false);
-        })
-        .catch((error) => {
-          console.log("Error getting documents: ", error);
-        });
-      setIsLoading(false);
-    } else {
-      db.collection("users")
-        .where("auth_id", "==", currentUser.uid)
-        .limit(1)
-        .get()
-        .then((res) => {
-          const [user] = res.docs;
-          // console.log(user);
-          const {
-            avatarURL,
-            firstName,
-            lastName,
-            gender,
-            birthday,
-          } = user.data();
-          setAvatar(avatarURL);
-          setFirstName(firstName);
-          setLastName(lastName);
-          if (gender == 1) {
-            setGender("male");
-            setGenderIcon("face");
-          } else if (gender == 2) {
-            setGender("female");
-            setGenderIcon("face-woman");
-          } else {
-            setGender("none");
-            setGenderIcon("incognito");
-          }
-          setBirthDate(birthday.toDate());
-          setBirthDateText(
-            birthday.toDate().getDate() +
-              "/" +
-              birthday.toDate().getMonth() +
-              "/" +
-              birthday.toDate().getFullYear()
-          );
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.log("Error getting documents: ", error);
-        });
-    }
+        }
+      );
+    return unsubscribe;
   }, []);
 
   const handleSignOut = async () => {

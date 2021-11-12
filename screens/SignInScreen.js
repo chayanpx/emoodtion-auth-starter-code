@@ -20,8 +20,8 @@ const auth = Firebase.auth();
 
 const SignInScreen = ({ navigation }) => {
   const { colors } = useTheme();
-  const [email, setEmail] = useState("admin1234@test.com");
-  const [password, setPassword] = useState("admin1234");
+  const [email, setEmail] = useState("test1234@test.com");
+  const [password, setPassword] = useState("test1234");
   const [passwordVisibility, setPasswordVisibility] = useState(true);
   const [rightIcon, setRightIcon] = useState("eye");
   const [signinError, setSigninError] = useState("");
@@ -63,25 +63,33 @@ const SignInScreen = ({ navigation }) => {
           result.idToken,
           result.accessToken
         );
-        auth
+        return auth
           .signInWithCredential(credential) //Login to Firebase
           .then(() => {
             const currentUser = auth.currentUser;
-            // console.log(currentUser);
-            db.collection("users")
-              .add({
-                auth_id: currentUser.uid,
-                avatarURL: `https://avatars.dicebear.com/api/micah/${currentUser.createdAt}.svg`,
-                firstName: null,
-                lastName: null,
-                birthday: null,
-                gender: null,
-              })
-              .then(() => {
-                console.log("Document successfully written!");
-              })
-              .catch((error) => {
-                console.error("Error writing document: ", error);
+            return db
+              .collection("users")
+              .where("auth_id", "==", currentUser.uid)
+              .limit(1)
+              .get()
+              .then((findUserResult) => {
+                const docList = findUserResult.docs.map((e) => e.data());
+                // console.log("Document data:", docList);
+                if (docList.length === 0) {
+                  console.log("No such document!");
+                  return db.collection("users").add({
+                    auth_id: currentUser.uid,
+                    username: result.user.name,
+                    avatarURL: `https://avatars.dicebear.com/api/micah/${new Date().getTime()}.svg`,
+                    bookmarks: [],
+                    firstName: "",
+                    lastName: "",
+                    gender: 3,
+                    birthday: null,
+                  });
+                } else {
+                  console.log("have document!");
+                }
               });
           })
           .catch((error) => {
