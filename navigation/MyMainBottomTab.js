@@ -3,10 +3,11 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 
-import MoodScreen from "../screens/MoodScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import CareCenterScreen from "../screens/CareCenterScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+
+import MyTrackMoodStack from "./MyTrackMoodStack";
 
 const MainBottomTab = createMaterialBottomTabNavigator();
 
@@ -15,14 +16,14 @@ export default function MyMainBottomTab() {
 
   return (
     <MainBottomTab.Navigator
-      initialRouteName="Mood"
+      initialRouteName="MyMood"
       activeColor="#FFFFFF"
       inactiveColor="#FFDEED"
       barStyle={{ backgroundColor: colors.primary }}
     >
       <MainBottomTab.Screen
-        name="Mood"
-        component={MoodScreen}
+        name="MyMood"
+        component={MyTrackMoodStack}
         options={{
           tabBarLabel: "Mood",
           tabBarIcon: ({ color }) => (
