@@ -1,4 +1,6 @@
 import React, { useContext, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { whoSignin } from "../store/actions/userAction";
 import {
   View,
   Text,
@@ -34,12 +36,12 @@ const FirstTimeScreen = ({ navigation }) => {
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState(new Date());
-  // const [birthDateText, setBirthDateText] = useState("");
-  // const [calendarIcon, setCalendarIcon] = useState("calendar");
   const [showPicker, setShowPicker] = useState(false);
   const [avatar, setAvatar] = useState(
     "https://avatars.dicebear.com/api/micah/:seed.svg"
   );
+
+  const dispatch = useDispatch();
 
   const random = () => {
     setAvatar(
@@ -51,13 +53,6 @@ const FirstTimeScreen = ({ navigation }) => {
     const currentDate = selectedDate || birthDate;
     setShowPicker(Platform.OS === "ios");
     setBirthDate(currentDate);
-    // setBirthDateText(
-    //   currentDate.getDate() +
-    //     "/" +
-    //     (currentDate.getMonth() + 1) +
-    //     "/" +
-    //     currentDate.getFullYear()
-    // );
   };
 
   const currentUser = auth.currentUser;
@@ -85,7 +80,18 @@ const FirstTimeScreen = ({ navigation }) => {
         gender: gender,
         bookmarks: [],
       });
-      // Alert.alert("Done!");
+      dispatch(
+        whoSignin(
+          currentUser.uid,
+          name,
+          avatar,
+          firstName,
+          lastName,
+          birthDate,
+          gender,
+          []
+        )
+      );
       navigation.navigate("Main");
     } else {
       setError("Please fill up this form.");
@@ -268,15 +274,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "white",
     marginTop: 50,
-    // marginBottom: 50,
   },
   body: {
-    // flex: 5,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "pink",
     marginBottom: 5,
   },
   title: {
@@ -295,27 +297,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "75%",
     marginBottom: 20,
-    // flexWrap: "wrap",
-    // marginRight: 0,
-    // marginHorizontal: 100,
-    // borderColor: "black",
-    // borderWidth: 1,
   },
   intputtitle: {
     fontSize: 16,
     fontWeight: "400",
     paddingLeft: 10,
     paddingRight: 30,
-    // borderColor: "black",
-    // borderWidth: 1,
   },
   datepicker: {
     width: 130,
     flex: 1,
-    // padding: 0,
     marginLeft: 10,
-    // borderColor: "black",
-    // borderWidth: 1,
   },
 });
 

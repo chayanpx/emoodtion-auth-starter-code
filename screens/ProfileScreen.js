@@ -9,6 +9,7 @@ import {
 } from "../components";
 import Firebase, { db } from "../config/Firebase";
 import { AuthenticatedUserContext } from "../navigation/AuthenticatedUserProvider";
+import dayjs from "dayjs";
 import { useTheme, RadioButton } from "react-native-paper";
 
 const auth = Firebase.auth();
@@ -36,6 +37,7 @@ const ProfileScreen = () => {
           includeMetadataChanges: true,
         },
         (querySnapshot) => {
+          // console.log("cur", currentUser);
           const users = [];
           querySnapshot.forEach((doc) => {
             users.push(doc.data());
@@ -58,11 +60,7 @@ const ProfileScreen = () => {
           if (users[0].birthday != null) {
             setBirthDate(users[0].birthday.toDate());
             setBirthDateText(
-              birthDate.getDate() +
-                "/" +
-                birthDate.getMonth() +
-                "/" +
-                birthDate.getFullYear()
+              dayjs(users[0].birthday.toDate()).format("D MMM YYYY")
             );
           }
           setIsLoading(false);

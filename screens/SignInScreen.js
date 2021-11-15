@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { whoSignin } from "../store/actions/userAction";
 import {
   View,
   Text,
@@ -7,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { MyButton, MyTextInput, MyErrorMessage } from "../components";
 import Constants from "expo-constants";
@@ -19,12 +22,15 @@ import { useTheme } from "react-native-paper";
 const auth = Firebase.auth();
 
 const SignInScreen = ({ navigation }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { colors } = useTheme();
   const [email, setEmail] = useState("test1234@test.com");
   const [password, setPassword] = useState("test1234");
   const [passwordVisibility, setPasswordVisibility] = useState(true);
   const [rightIcon, setRightIcon] = useState("eye");
   const [signinError, setSigninError] = useState("");
+
+  const dispatch = useDispatch();
 
   const handlePasswordVisibility = () => {
     if (rightIcon === "eye") {
@@ -39,7 +45,42 @@ const SignInScreen = ({ navigation }) => {
   const onSignin = async () => {
     try {
       if (email !== "" && password !== "") {
-        await auth.signInWithEmailAndPassword(email, password);
+        await auth
+          .signInWithEmailAndPassword(email, password)
+          .then(() => {
+            const currentUser = auth.currentUser;
+            return db
+              .collection("users")
+              .where("auth_id", "==", currentUser.uid)
+              .limit(1)
+              .get()
+              .then((findUserResult) => {
+                const docList = findUserResult.docs.map((e) => e.data());
+                // console.log("Document data:", docList);
+                if (docList.length === 0) {
+                  console.log("No such document!");
+                } else {
+                  console.log("have document!");
+                  let who = docList[0];
+                  // console.log("auth", docList[0].auth_id);
+                  dispatch(
+                    whoSignin(
+                      who.auth_id,
+                      who.username,
+                      who.avatarURL,
+                      who.firstName,
+                      who.lastName,
+                      who.birthday.toDate(),
+                      who.gender,
+                      who.bookmarks
+                    )
+                  );
+                }
+              });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       } else {
         setSigninError("Please fill up this form.");
       }
@@ -66,6 +107,7 @@ const SignInScreen = ({ navigation }) => {
         return auth
           .signInWithCredential(credential) //Login to Firebase
           .then(() => {
+            setIsLoading(true);
             const currentUser = auth.currentUser;
             return db
               .collection("users")
@@ -89,6 +131,35 @@ const SignInScreen = ({ navigation }) => {
                   });
                 } else {
                   console.log("have document!");
+                  let who = docList[0];
+                  // console.log("auth", docList[0]);
+                  if (who.birthday === null) {
+                    dispatch(
+                      whoSignin(
+                        who.auth_id,
+                        who.username,
+                        who.avatarURL,
+                        who.firstName,
+                        who.lastName,
+                        null,
+                        who.gender,
+                        who.bookmarks
+                      )
+                    );
+                  } else {
+                    dispatch(
+                      whoSignin(
+                        who.auth_id,
+                        who.username,
+                        who.avatarURL,
+                        who.firstName,
+                        who.lastName,
+                        who.birthday.toDate(),
+                        who.gender,
+                        who.bookmarks
+                      )
+                    );
+                  }
                 }
               });
           })
@@ -103,6 +174,14 @@ const SignInScreen = ({ navigation }) => {
       setSigninError(message);
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator animating={true} size="large" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -220,19 +299,16 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   header: {
-    // flex: 2,
     paddingHorizontal: 55,
     marginTop: 100,
     marginBottom: 50,
   },
   body: {
-    // flex: 3,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 150,
   },
   footer: {
-    // flex: 0.5,
     bottom: 0,
     height: 65,
     backgroundColor: "#FFFF",
