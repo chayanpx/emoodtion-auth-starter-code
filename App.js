@@ -1,4 +1,6 @@
 import React from "react";
+import { createStore, combineReducers } from "redux";
+import { Provider } from "react-redux";
 import { StyleSheet, Text, View } from "react-native";
 import {
   DefaultTheme,
@@ -6,6 +8,12 @@ import {
   Provider as PaperProvider,
 } from "react-native-paper";
 import Routes from "./navigation/index";
+import userReducer from "./store/reducers/userReducer";
+
+const rootReducer = combineReducers({
+  user: userReducer,
+});
+const store = createStore(rootReducer);
 
 const theme = {
   ...DefaultTheme,
@@ -17,13 +25,20 @@ const theme = {
     subtitle: "#30343F",
     error: "#E90404",
     background: "#FFFF",
+    mood1: "#949599",
+    mood2: "#87ADC9",
+    mood3: "#ECEEED",
+    mood4: "#F9E786",
+    mood5: "#7BD5BC",
   },
 };
 
 export default function App() {
   return (
     <PaperProvider theme={theme}>
-      <Routes />
+      <Provider store={store}>
+        <Routes />
+      </Provider>
     </PaperProvider>
   );
 }
