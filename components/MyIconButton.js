@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-const MyIconButton = ({ color, size, onPress, name }) => {
+const MyIconButton = ({ color, size, onPress, name, styleIcon }) => {
   return (
     <Pressable
       style={(args) => {
@@ -20,15 +20,20 @@ const MyIconButton = ({ color, size, onPress, name }) => {
       }}
       onPress={onPress}
     >
-      <MaterialCommunityIcons name={name} size={size} color={color} />
+      <MaterialCommunityIcons
+        name={name}
+        size={size}
+        color={color}
+        style={styleIcon}
+      />
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   base: {
-    alignItems: "center",
-    justifyContent: "center",
+    // alignItems: "center",
+    // justifyContent: "center",
   },
 });
 

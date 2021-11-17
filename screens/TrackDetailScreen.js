@@ -34,13 +34,18 @@ const TrackDetailScreen = ({ navigation }) => {
   const emotion = useSelector((state) => state.mood.emotion);
 
   const hideDialog = () => {
-    db.collection("mood").add({
-      auth_id: auth_id,
-      create_at: new Date(),
-      emotion: emotion,
-      value: value,
-      note: textarea,
-    });
+    if (auth_id) {
+      db.collection("mood").add({
+        auth_id: auth_id,
+        create_at: new Date(),
+        emotion: emotion,
+        value: value,
+        note: textarea,
+      });
+    } else {
+      console.log("error: don't have auth_id");
+    }
+
     // console.log(
     //   "auth_id",
     //   auth_id,

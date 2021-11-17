@@ -1,4 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { whoSignin } from "../store/actions/userAction";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import {
   MyButton,
@@ -28,6 +30,9 @@ const ProfileScreen = () => {
   const [birthDate, setBirthDate] = useState(new Date());
   const [birthDateText, setBirthDateText] = useState("");
   const [avatar, setAvatar] = useState();
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const unsubscribe = db
       .collection("users")
@@ -41,26 +46,55 @@ const ProfileScreen = () => {
           const users = [];
           querySnapshot.forEach((doc) => {
             users.push(doc.data());
+            doc.id;
+            // console.log(doc.id);
           });
+          let who = users[0];
           // console.log(users[0].auth_id);
-          setName(users[0].username);
-          setAvatar(users[0].avatarURL);
-          setFirstName(users[0].firstName);
-          setLastName(users[0].lastName);
-          if (users[0].gender == 1) {
+          setName(who.username);
+          setAvatar(who.avatarURL);
+          setFirstName(who.firstName);
+          setLastName(who.lastName);
+          if (who.gender == 1) {
             setGender("male");
             setGenderIcon("face");
-          } else if (users[0].gender == 2) {
+          } else if (who.gender == 2) {
             setGender("female");
             setGenderIcon("face-woman");
           } else {
             setGender("none");
             setGenderIcon("incognito");
           }
-          if (users[0].birthday != null) {
-            setBirthDate(users[0].birthday.toDate());
-            setBirthDateText(
-              dayjs(users[0].birthday.toDate()).format("D MMM YYYY")
+          if (who.birthday != null) {
+            setBirthDate(who.birthday.toDate());
+            setBirthDateText(dayjs(who.birthday.toDate()).format("D MMM YYYY"));
+          }
+          // console.log("auth", docList[0]);
+          if (who.birthday === null) {
+            dispatch(
+              whoSignin(
+                who.auth_id,
+                who.username,
+                who.avatarURL,
+                who.firstName,
+                who.lastName,
+                null,
+                who.gender,
+                who.bookmarks
+              )
+            );
+          } else {
+            dispatch(
+              whoSignin(
+                who.auth_id,
+                who.username,
+                who.avatarURL,
+                who.firstName,
+                who.lastName,
+                who.birthday.toDate(),
+                who.gender,
+                who.bookmarks
+              )
             );
           }
           setIsLoading(false);

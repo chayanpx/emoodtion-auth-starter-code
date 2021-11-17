@@ -16,7 +16,7 @@ import {
   MyMoodList,
   MyGoalList,
 } from "../components";
-import { Card, List, FAB, useTheme } from "react-native-paper";
+import { Card, List, FAB, Dialog, Portal, useTheme } from "react-native-paper";
 import Firebase, { db } from "../config/Firebase";
 import dayjs from "dayjs";
 
@@ -31,15 +31,19 @@ const MoodScreen = ({ navigation }) => {
     dayjs(today).format("DD MMM YYYY")
   );
   const [mood, setMood] = useState([]);
-  const [goalStatus, setGoalStatus] = useState(5);
+  const [goal, setGoal] = useState([]);
+  const [todayGaol, setTodayGoal] = useState(0);
+  const [newGoal, setNewGoal] = useState("");
+  const [visible, setVisible] = React.useState(false);
 
+  const auth_id = useSelector((state) => state.user.auth_id);
   const username = useSelector((state) => state.user.username);
 
   useEffect(() => {
     const currentUser = auth.currentUser;
     const start_day = dayjs().startOf("date").toDate();
     const end_day = dayjs().endOf("date").toDate();
-    console.log("today", today, "start_day", start_day, "end_day", end_day);
+    // console.log("today", today, "start_day", start_day, "end_day", end_day);
     const unsubscribe = db
       .collection("mood")
       .where("auth_id", "==", currentUser.uid)
@@ -90,30 +94,58 @@ const MoodScreen = ({ navigation }) => {
           setMood(user_mood);
           // setIsLoading(false);
           // console.log("today_mood", today_mood);
-          setIsLoading(false);
         }
       );
 
-    // db.collection("goal")
-    //   .where("auth_id", "==", currentUser.uid)
-    //   .orderBy("start_date", "asc")
-    //   .startAt(start_day)
-    //   // .endAt(end_day)
-    //   .onSnapshot(
-    //     {
-    //       includeMetadataChanges: true,
-    //     },
-    //     (querySnapshot) => {
-    //       const user_goal = [];
-    //       querySnapshot.forEach((doc) => {
-    //         user_goal.push(doc.data());
-    //       });
-    //       // console.log("goal", user_goal);
-    //       // console.log("today_mood", today_mood);
-    //     }
-    //   );
+    db.collection("goal")
+      .where("auth_id", "==", auth_id)
+      .orderBy("create_at", "asc")
+      .startAt(start_day)
+      .endAt(end_day)
+      .onSnapshot(
+        {
+          includeMetadataChanges: true,
+        },
+        (querySnapshot) => {
+          const user_goal = [];
+          querySnapshot.forEach((doc) => {
+            let doc_id = doc.id;
+            user_goal.push({ ...doc.data(), doc_id });
+          });
+          console.log("goal", user_goal[0].goal_name);
+          setGoal(user_goal);
+          setTodayGoal(user_goal.length);
+          setIsLoading(false);
+        }
+      );
     return unsubscribe;
   }, []);
+
+  const showDialog = () => {
+    setVisible(true);
+  };
+  const hideDialog = () => {
+    setVisible(false);
+    setNewGoal("");
+  };
+  const addGoal = () => {
+    db.collection("goal")
+      .add({
+        auth_id: auth_id,
+        goal_name: newGoal,
+        create_at: new Date(),
+        checked: false,
+      })
+      .then(() => {
+        console.log("Document successfully add!");
+        setNewGoal("");
+        setVisible(false);
+      })
+      .catch((error) => {
+        // The document probably doesn't exist.
+        console.error("Error updating document: ", error);
+      });
+  };
 
   if (isLoading) {
     return (
@@ -126,25 +158,99 @@ const MoodScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <View style={styles.goal_card}>
-        <Card>
-          <Card.Content>
-            <List.Subheader
-              style={[styles.goal_title, { color: colors.title }]}
-            >
-              Today goal
-            </List.Subheader>
-            <List.Section>
-              <MyGoalList
-                title={"title"}
-                status={goalStatus}
-                onPress={() => setGoalStatus(!goalStatus)}
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <MyIconButton
+              name="close"
+              size={35}
+              color={colors.subtitle}
+              onPress={hideDialog}
+              styleIcon={{ marginLeft: 320, marginVertical: 10 }}
+            />
+            <Dialog.Content style={styles.dialog}>
+              <Text style={[styles.goal_title, { color: colors.title }]}>
+                Do you have goal today?
+              </Text>
+              <MyTextInput
+                inputStyle={{
+                  fontSize: 16,
+                }}
+                containerStyle={{
+                  backgroundColor: "#f2f2f2",
+                  marginBottom: 10,
+                  marginTop: 30,
+                  width: "80%",
+                }}
+                placeholder="add your little goal :-)"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={newGoal}
+                onChangeText={(text) => setNewGoal(text)}
               />
+              <MyButton
+                onPress={addGoal}
+                backgroundColor={colors.secondary}
+                title="SAVE"
+                color="#fff"
+                titleSize={16}
+                containerStyle={{
+                  marginTop: 10,
+                  marginBottom: 20,
+                  width: "80%",
+                }}
+              />
+            </Dialog.Content>
+          </Dialog>
+        </Portal>
+        <Card style={{ height: 170 }}>
+          <Card.Content>
+            <Text>
+              <Text style={[styles.goal_title, { color: colors.title }]}>
+                <Text> </Text> Today goal
+              </Text>
+              {todayGaol >= 2 ? (
+                <Text> 📍</Text>
+              ) : (
+                <MyIconButton
+                  name="plus"
+                  size={30}
+                  onPress={() => {
+                    setVisible(!visible);
+                  }}
+                  styleIcon={{ marginLeft: 10 }}
+                />
+              )}
+            </Text>
+            <List.Section>
+              {goal.map((item, index) => {
+                return (
+                  <MyGoalList
+                    key={index}
+                    title={item.goal_name}
+                    status={item.checked}
+                    onPress={() => {
+                      db.collection("goal")
+                        .doc(item.doc_id)
+                        .update({
+                          checked: !item.checked,
+                        })
+                        .then(() => {
+                          console.log("Document successfully updated!");
+                        })
+                        .catch((error) => {
+                          // The document probably doesn't exist.
+                          console.error("Error updating document: ", error);
+                        });
+                    }}
+                  />
+                );
+              })}
             </List.Section>
           </Card.Content>
         </Card>
       </View>
       <View style={{ width: 350 }}>
-        <Card style={{ height: 550 }}>
+        <Card style={{ height: 490 }}>
           <Card.Content>
             <List.Subheader style={[styles.title, { color: colors.title }]}>
               Hi, {username}
@@ -154,7 +260,7 @@ const MoodScreen = ({ navigation }) => {
             >
               {todayText}
             </List.Subheader>
-            <List.Section style={{ height: 420 }}>
+            <List.Section style={{ height: 360 }}>
               <ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
                 {mood.map((item, index) => {
                   // console.log("item", item);
@@ -221,6 +327,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "left",
     marginBottom: -15,
+  },
+  dialog: {
+    alignItems: "center",
   },
 });
 
