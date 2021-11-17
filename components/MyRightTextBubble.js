@@ -44,11 +44,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   itemIn: {
-    marginLeft: 40,
+    marginLeft: 45,
   },
   itemOut: {
     alignSelf: "flex-end",
-    marginRight: 40,
+    marginRight: 45,
   },
   balloon: {
     maxWidth: moderateScale(250, 2),

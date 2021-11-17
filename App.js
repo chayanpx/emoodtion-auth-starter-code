@@ -9,9 +9,11 @@ import {
 } from "react-native-paper";
 import Routes from "./navigation/index";
 import userReducer from "./store/reducers/userReducer";
+import moodReducer from "./store/reducers/moodReducer";
 
 const rootReducer = combineReducers({
   user: userReducer,
+  mood: moodReducer,
 });
 const store = createStore(rootReducer);
 

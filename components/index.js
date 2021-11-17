@@ -7,6 +7,7 @@ import MyMoodList from "./MyMoodList";
 import MyGoalList from "./MyGoalList";
 import MyLeftTextBubble from "./MyLeftTextBubble";
 import MyRightTextBubble from "./MyRightTextBubble";
+import MyTextArea from "./MyTextArea";
 
 export {
   MyButton,
@@ -18,4 +19,5 @@ export {
   MyGoalList,
   MyLeftTextBubble,
   MyRightTextBubble,
+  MyTextArea,
 };

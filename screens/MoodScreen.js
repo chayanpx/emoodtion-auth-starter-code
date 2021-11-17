@@ -90,28 +90,28 @@ const MoodScreen = ({ navigation }) => {
           setMood(user_mood);
           // setIsLoading(false);
           // console.log("today_mood", today_mood);
+          setIsLoading(false);
         }
       );
 
-    db.collection("goal")
-      .where("auth_id", "==", currentUser.uid)
-      .orderBy("start_date", "asc")
-      .startAt(start_day)
-      // .endAt(end_day)
-      .onSnapshot(
-        {
-          includeMetadataChanges: true,
-        },
-        (querySnapshot) => {
-          const user_goal = [];
-          querySnapshot.forEach((doc) => {
-            user_goal.push(doc.data());
-          });
-          // console.log("goal", user_goal);
-          setIsLoading(false);
-          // console.log("today_mood", today_mood);
-        }
-      );
+    // db.collection("goal")
+    //   .where("auth_id", "==", currentUser.uid)
+    //   .orderBy("start_date", "asc")
+    //   .startAt(start_day)
+    //   // .endAt(end_day)
+    //   .onSnapshot(
+    //     {
+    //       includeMetadataChanges: true,
+    //     },
+    //     (querySnapshot) => {
+    //       const user_goal = [];
+    //       querySnapshot.forEach((doc) => {
+    //         user_goal.push(doc.data());
+    //       });
+    //       // console.log("goal", user_goal);
+    //       // console.log("today_mood", today_mood);
+    //     }
+    //   );
     return unsubscribe;
   }, []);
 
@@ -144,7 +144,7 @@ const MoodScreen = ({ navigation }) => {
         </Card>
       </View>
       <View style={{ width: 350 }}>
-        <Card>
+        <Card style={{ height: 550 }}>
           <Card.Content>
             <List.Subheader style={[styles.title, { color: colors.title }]}>
               Hi, {username}
@@ -154,7 +154,7 @@ const MoodScreen = ({ navigation }) => {
             >
               {todayText}
             </List.Subheader>
-            <List.Section style={{ height: 200 }}>
+            <List.Section style={{ height: 420 }}>
               <ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
                 {mood.map((item, index) => {
                   // console.log("item", item);
@@ -192,6 +192,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 40,
   },
   fab: {
     position: "absolute",

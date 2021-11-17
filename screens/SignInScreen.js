@@ -80,6 +80,14 @@ const SignInScreen = ({ navigation }) => {
           })
           .catch((error) => {
             console.log(error);
+            if (
+              error.message ===
+              "There is no user record corresponding to this identifier. The user may have been deleted."
+            ) {
+              setSigninError(
+                "Don't have record. Please check your email and password or Sign Up first."
+              );
+            }
           });
       } else {
         setSigninError("Please fill up this form.");
