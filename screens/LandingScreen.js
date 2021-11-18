@@ -5,8 +5,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 
 import Firebase, { db } from "../config/Firebase";
-import careCenter from "../data/carecenter.json";
-import moodoftest from "../data/moodoftest.json";
+// import careCenter from "../data/carecenter.json";
+// import moodoftest from "../data/moodoftest.json";
 
 const LandingScreen = ({ navigation }) => {
   const { colors } = useTheme();

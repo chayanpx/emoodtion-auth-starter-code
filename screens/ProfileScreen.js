@@ -87,13 +87,13 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.screen}>
-      <MyAvatar
+      {/* <MyAvatar
         // style={{ marginBottom: 15 }}
         height={110}
         width={110}
         color={"#FFF"}
         uri={avatar}
-      />
+      /> */}
       <MyTextInput
         editable={false}
         label="E-mail"

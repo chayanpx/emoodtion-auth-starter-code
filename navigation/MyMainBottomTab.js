@@ -3,11 +3,11 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 
-import DashboardScreen from "../screens/DashboardScreen";
 import CareCenterScreen from "../screens/CareCenterScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 
 import MyTrackMoodStack from "./MyTrackMoodStack";
+import MyDashboardStack from "./MyDashboardStack";
 
 const MainBottomTab = createMaterialBottomTabNavigator();
 
@@ -37,7 +37,7 @@ export default function MyMainBottomTab() {
       />
       <MainBottomTab.Screen
         name="Dashboard"
-        component={DashboardScreen}
+        component={MyDashboardStack}
         options={{
           tabBarLabel: "Dashboard",
           tabBarIcon: ({ color }) => (
