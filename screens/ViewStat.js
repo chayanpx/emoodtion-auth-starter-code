@@ -1,42 +1,39 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LineChart, ContributionGraph } from "react-native-chart-kit";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DropDownPicker from 'react-native-dropdown-picker';
+import Firebase, { db } from "../config/Firebase";
+import { useTheme } from "react-native-paper";
+import dayjs from "dayjs";
+
+const auth = Firebase.auth();
 
 const greyColor = '#4F4F4F';
 
 function ViewStat() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [mood, setMood] = useState([]);
+    const { colors } = useTheme();
 
-    const [mood1, setMood1] = useState("");
-    const [open1, setOpen1] = useState(false);
-    const [value1, setValue1] = useState(null);
-    const [items1, setItems1] = useState([
+    const [selectedMood, setSelectedMood] = useState("");
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const [items, setItems] = useState([
         { label: 'Apple', value: 'apple' },
         { label: 'Banana', value: 'banana' }
     ]);
-    const [mood2, setMood2] = useState("");
-    const [open2, setOpen2] = useState(false);
-    const [value2, setValue2] = useState(null);
-    const [items2, setItems2] = useState([
-        { label: 'Apple', value: 'apple' },
-        { label: 'Banana', value: 'banana' }
-    ]);
-    const [countryOpen, setCountryOpen] = useState(false);
-    const [cityOpen, setCityOpen] = useState(false);
 
-    const onCountryOpen = useCallback(() => {
-        setCityOpen(false);
-    }, []);
-
-    const onCityOpen = useCallback(() => {
-        setCountryOpen(false);
-    }, []);
+    // const setItemForConChart = () => {
+    //     const keep = [];
+    //     let what = mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD"));
+    //     keep.push(what)
+    // }
 
     const chartConfig = {
-        backgroundGradientFrom: "#ffffff",
+        backgroundGradientFrom: "#f2f2f2",
         // backgroundGradientFromOpacity: 0,
-        // backgroundGradientTo: "#ffffff",
+        // backgroundGradientTo: "transparent",
         color: () => '#ffffff',
         labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         strokeWidth: 2, // optional, default 3
@@ -70,6 +67,68 @@ function ViewStat() {
         // legend: ["Rainy Days"] optional
     };
 
+    useEffect(() => {
+        const currentUser = auth.currentUser;
+        const unsubscribe = db
+            .collection("mood")
+            .where("auth_id", "==", currentUser.uid)
+            .onSnapshot(
+                {
+                    includeMetadataChanges: true,
+                },
+                (querySnapshot) => {
+                    const user_mood = [];
+                    querySnapshot.forEach((doc) => {
+                        let icon = "default";
+                        let background = "black";
+                        switch (doc.data().emotion) {
+                            case 1: {
+                                icon = "emoticon-dead-outline";
+                                background = colors.mood1;
+                                break;
+                            }
+                            case 2: {
+                                icon = "emoticon-sad-outline";
+                                background = colors.mood2;
+                                break;
+                            }
+                            case 3: {
+                                icon = "emoticon-neutral-outline";
+                                background = colors.mood3;
+                                break;
+                            }
+                            case 4: {
+                                icon = "emoticon-happy-outline";
+                                background = colors.mood4;
+                                break;
+                            }
+                            case 5: {
+                                icon = "emoticon-cool-outline";
+                                background = colors.mood5;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        user_mood.push({ ...doc.data(), icon, background });
+                    });
+                    console.log(user_mood);
+                    // console.log(colorData)
+                    setMood(user_mood);
+                    setIsLoading(false);
+                }
+            );
+        return unsubscribe;
+    }, []);
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator animating={true} size="large" />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.screen}>
             {/* upper container */}
@@ -77,48 +136,47 @@ function ViewStat() {
                 <View style={styles.moodIcon}>
                     <TouchableOpacity
                         onPress={() => {
-                            setMood1('Terrible Mood');
-                            console.log(mood1)
+                            setSelectedMood('Terrible Mood');
+                            console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-dead-outline" color={greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
-                            setMood1('Bad Mood');
-                            console.log(mood1)
+                            setSelectedMood('Bad Mood');
+                            console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-sad-outline" color={greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
-                            setMood1('Neutral Mood');
-                            console.log(mood1)
+                            setSelectedMood('Neutral Mood');
+                            console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-neutral-outline" color={greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
-                            setMood1('Good Mood');
-                            console.log(mood1)
+                            setSelectedMood('Good Mood');
+                            console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-happy-outline" color={greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
-                            setMood1('Happy Mood');
-                            console.log(mood1)
+                            setSelectedMood('Happy Mood');
+                            console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-cool-outline" color={greyColor} size={38} />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.detail1}>
+                    {/* {mood.map(x => x.create_at)} */}
                     <DropDownPicker
-                        // open={countryOpen}
-                        // onOpen={onCountryOpen}
                         containerStyle={{
                             width: 100,
                             marginLeft: '5%'
@@ -128,21 +186,15 @@ function ViewStat() {
                             fontSize: 14,
                             fontWeight: '600'
                         }}
-                        // placeholder='2021'
-                        // value={value}
-                        // items={items}
-                        // setOpen={setOpen}
-                        // setValue={setValue}
-                        // setItems={setItems}
-                        open={countryOpen}
-                        // onOpen={onCountryOpen}
-                        value={value1}
-                        items={items1}
-                        setOpen={setOpen1}
-                        setValue={setValue1}
-                        setItems={setItems1}
+                        placeholder='2021'
+                        value={value}
+                        items={items}
+                        open={open}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
                     />
-                    <Text style={styles.selectedMood}> {mood1} </Text>
+                    <Text style={styles.selectedMood}> {selectedMood} </Text>
                 </View>
 
                 <View>
@@ -162,32 +214,6 @@ function ViewStat() {
             <View style={styles.lowerContainer}>
                 <View>
                     <View style={styles.detail2}>
-                        <DropDownPicker
-                            // open={cityOpen}
-                            // onOpen={onCityOpen}
-                            containerStyle={{
-                                width: 100,
-                                marginLeft: '5%'
-                            }}
-                            textStyle={{
-                                color: '#4F4F4F',
-                                fontSize: 14,
-                                fontWeight: '600'
-                            }}
-                            // placeholder='2021'
-                            // value={value}
-                            // items={items}
-                            // setOpen={setOpen}
-                            // setValue={setValue}
-                            // setItems={setItems}
-                            open={cityOpen}
-                            onOpen={onCityOpen}
-                            value={value2}
-                            items={items2}
-                            setOpen={setOpen2}
-                            setValue={setValue2}
-                            setItems={setItems2}
-                        />
                         <Text style={styles.Overall}>Overall</Text>
                     </View>
                     <LineChart
@@ -227,9 +253,9 @@ const styles = StyleSheet.create({
     upperContainer: {
         backgroundColor: '#ffffff',
         borderRadius: 10,
-        marginTop: -90,
+        // marginTop: ,
         width: '90%',
-        height: '43%',
+        height: '50%',
         alignSelf: 'center'
         // width: '300px',
         // height: '262px'
@@ -238,8 +264,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         borderRadius: 10,
         width: '90%',
-        height: '43%',
-        marginTop: 20,
+        height: '46%',
+        marginTop: 10,
         alignSelf: 'center'
     },
     detail1: {
@@ -254,11 +280,12 @@ const styles = StyleSheet.create({
         color: '#828282'
     },
     ContributionGraph: {
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
     LineChart: {
+        marginTop: 2,
         alignSelf: 'center',
-        justifyContent: "center"
+        justifyContent: "center",
     },
     Overall: {
         marginLeft: 140,

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { MyButton } from "../components";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
+import ImageSlider from 'react-native-image-slider';
 
 import Firebase, { db } from "../config/Firebase";
 // import careCenter from "../data/carecenter.json";
@@ -10,6 +11,11 @@ import Firebase, { db } from "../config/Firebase";
 
 const LandingScreen = ({ navigation }) => {
   const { colors } = useTheme();
+  const images = [
+    'https://pbs.twimg.com/media/EWN4kPOU4AAbsjV.jpg',
+    'https://cdn.kstarlive.com/image/1593655433117-0.jpg',
+    'https://v-phinf.pstatic.net//20201222_37/1608619033493I7Ofg_JPEG/image.jpg?type=w1000',
+  ];
 
   // const care_center = careCenter;
   // const mood = moodoftest;
@@ -34,17 +40,11 @@ const LandingScreen = ({ navigation }) => {
         colors={["#E2F0FB", "#FFE6E6", "#F0E4EB"]}
         style={styles.background}
       />
-      {/* <MyButton
-        onPress={addData}
-        backgroundColor={colors.primary}
-        title="ADD DATA"
-        color="#fff"
-        titleSize={20}
-        containerStyle={{
-          marginBottom: 24,
-        }}
-      /> */}
-      <Text style={{ marginVertical: 200 }}>Landing Screen</Text>
+      <ImageSlider
+        style={styles.imageSlider}
+        autoPlayWithInterval={3000}
+        images={images}
+      />
       <MyButton
         onPress={() => {
           navigation.navigate("SignIn");
@@ -86,6 +86,12 @@ const styles = StyleSheet.create({
     top: 0,
     height: "100%",
   },
+  imageSlider: {
+    width: '90%',
+    maxHeight: '70%',
+    borderRadius: '50%',
+    alignSelf: 'center'
+  }
 });
 
 export default LandingScreen;

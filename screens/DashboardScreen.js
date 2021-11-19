@@ -9,39 +9,18 @@ import { MyMoodList } from "../components";
 
 const auth = Firebase.auth();
 
-//เก้ทค่าได้ทุกอย่างแล้ว ไปเอาลอจิคใส่สีตอนเรนเด้อมา ฮืออออออออออออออออออออออออออออออออออออออออออออออออ
-
 const DashboardScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [mood, setMood] = useState([]);
     const { colors } = useTheme();
 
-    const [testDate, setTestDate] = useState();
     const [currentDate, setCurrentDate] = useState(dayjs(new Date()).format("DD MMM YYYY"));
-    const [keepDate, setKeepDate] = useState([]);
-    const [avgValue, setAvgValue] = useState(0);
+    const [haveDate, setHaveDate] = useState([]);
     const pickDate = (date) => {
         setCurrentDate(
             dayjs(date).format("DD MMM YYYY")
         );
     };
-
-    const checkDate = (pickDate) => {
-        const tempKeepDate = (mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == pickDate));
-        setKeepDate(tempKeepDate);
-        console.log(tempKeepDate);
-        return (true);
-    }
-
-    const calValue = () => {
-        const tempKeep = keepDate;
-        let avg = 0;
-        tempKeep.map((data, index) => {
-            avg += data.value;
-        });
-        avg = avg / tempKeep.length;
-        setAvgValue(avg);
-    }
 
     useEffect(() => {
         const currentUser = auth.currentUser;
@@ -54,6 +33,7 @@ const DashboardScreen = ({ navigation }) => {
                 },
                 (querySnapshot) => {
                     const user_mood = [];
+                    const createDate = [];
                     querySnapshot.forEach((doc) => {
                         let icon = "default";
                         let background = "black";
@@ -87,8 +67,12 @@ const DashboardScreen = ({ navigation }) => {
                                 break;
                         }
                         user_mood.push({ ...doc.data(), icon, background });
+                        let create_at = doc.data().create_at.toDate();
+                        let emotion = doc.data().emotion;
+                        createDate.push(dayjs(create_at).format("YYYY-MM-DD"));
                     });
-                    console.log(user_mood);
+                    // console.log(createDate)
+                    setHaveDate(createDate)
                     setMood(user_mood);
                     setIsLoading(false);
                 }
@@ -104,33 +88,83 @@ const DashboardScreen = ({ navigation }) => {
         );
     }
 
+    //remove duplicate dunction
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+    var a = haveDate;
+    var unique = a.filter(onlyUnique);
+
+    //cal each date acerage emotion 
+    var ngong = [];
+    var ngong1 = []
+    var avg = 0;
+    var datee = "";
+    var background = "";
+    var textCol = "";
+    const check = () => {
+        for (let i = 0; i < unique.length; i++) {
+            ngong.push(mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == unique[i]));
+        }
+        ngong.map((item, index) => {
+            item.map((check, num) => {
+                datee = dayjs(check.create_at.toDate()).format("YYYY-MM-DD")
+                avg += check.value
+                avg = Math.floor(avg / item.length)
+            })
+            if (avg > 0 && avg <= 20) {
+                background = "#949599";
+                textCol = "white";
+            }
+            else if (avg > 20 && avg <= 40) {
+                background = "#87ADC9";
+                textCol = "white";
+            }
+            else if (avg > 40 && avg <= 60) {
+                background = "#ECEEED";
+                textCol = colors.subtitle;
+            }
+            else if (avg > 60 && avg <= 80) {
+                background = "#F9E786";
+                textCol = colors.subtitle;
+            }
+            else if (avg > 80) {
+                background = "#7BD5BC";
+                textCol = "white";
+            }
+            ngong1.push({ avg, datee, background, textCol })
+        })
+    }
+
+    check();
+    console.log(ngong1);
+
+    var datasource = {}
+    ngong1.map((item, index) => {
+        datasource[item.datee] = {
+            date: item.datee,
+            customStyles: {
+                container: {
+                    backgroundColor: item.background,
+                },
+                text: {
+                    color: item.textCol
+                }
+            }
+        }
+    })
+
     return (
         <View style={styles.screen}>
-            <Calendar
-                current={Date()}
-                style={styles.calendar}
-                onDayPress={(date) => {
-                    console.log();
-                    pickDate(date.dateString);
-                    checkDate(date.dateString);
-                    calValue();
-                }}
-            // markingType={'custom'}
-            // markedDates={{
-            //   '2021-11-28': {
-            //     customStyles: {
-            //       container: {
-            //         backgroundColor: 'green'
-            //       },
-            //       text: {
-            //         color: 'black',
-            //         fontWeight: 'bold'
-            //       }
-            //     }
-            //   },
-            // }}
-            />
             <View style={styles.bigContainer}>
+                <Calendar
+                    style={styles.calendar}
+                    onDayPress={(date) => {
+                        pickDate(date.dateString);
+                    }}
+                    markingType={'custom'}
+                    markedDates={datasource}
+                />
                 <View style={styles.noteContainer}>
                     <Text style={styles.noteDate}>
                         {currentDate}
@@ -146,21 +180,22 @@ const DashboardScreen = ({ navigation }) => {
                 </View>
                 <List.Section style={{ height: 360 }}>
                     <ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-                        {keepDate.map((item, index) => {
-                            // console.log("item", item);
-                            return (
-                                <MyMoodList
-                                    key={index}
-                                    title={item.create_at
-                                        .toDate()
-                                        .toLocaleTimeString()
-                                        .replace(/:\d{2}\s/, " ")}
-                                    description={item.note}
-                                    icon={item.icon}
-                                    moodColor={item.background}
-                                    onPress={() => console.log("Pressed")}
-                                />
-                            );
+                        {mood.map((item, index) => {
+                            if (dayjs(item.create_at.toDate()).format("DD MMM YYYY") == currentDate) {
+                                return (
+                                    <MyMoodList
+                                        key={index}
+                                        title={item.create_at
+                                            .toDate()
+                                            .toLocaleTimeString()
+                                            .replace(/:\d{2}\s/, " ")}
+                                        description={item.note}
+                                        icon={item.icon}
+                                        moodColor={item.background}
+                                        onPress={() => console.log("Pressed")}
+                                    />
+                                );
+                            }
                         })}
                     </ScrollView>
                 </List.Section>
@@ -173,8 +208,6 @@ const styles = StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: 'white',
-        // justifyContent: "center",
-        // alignItems: "center",
     },
     calendar: {
         paddingTop: '8%',
@@ -191,12 +224,10 @@ const styles = StyleSheet.create({
     noteContainer: {
         position: "relative",
         marginTop: 15,
-        // marginBottom: 2,
         flex: 1,
         flexDirection: 'row',
         backgroundColor: '#F2F2F2',
         justifyContent: 'center',
-        // alignItems: "center"
     },
     noteDate: {
         position: "absolute",
@@ -210,7 +241,6 @@ const styles = StyleSheet.create({
         color: "#4F4F4F",
         top: '4.5%',
         left: '27%',
-
     }
 });
 
