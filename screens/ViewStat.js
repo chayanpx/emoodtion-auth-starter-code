@@ -13,6 +13,13 @@ const greyColor = '#4F4F4F';
 
 function ViewStat() {
     const [isLoading, setIsLoading] = useState(true);
+    //for render filter contrubute graph 
+    const [emoodtion, setEmoodtion] = useState(5);
+    //for annual graph
+    const [month, setMonth] = useState([]);
+    //for keep date existed in database
+    const [haveDate, setHaveDate] = useState([]);
+
     const [mood, setMood] = useState([]);
     const { colors } = useTheme();
 
@@ -24,23 +31,17 @@ function ViewStat() {
         { label: 'Banana', value: 'banana' }
     ]);
 
-    // const setItemForConChart = () => {
-    //     const keep = [];
-    //     let what = mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD"));
-    //     keep.push(what)
-    // }
-
     const chartConfig = {
-        backgroundGradientFrom: "#f2f2f2",
-        // backgroundGradientFromOpacity: 0,
-        // backgroundGradientTo: "transparent",
-        color: () => '#ffffff',
-        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+        backgroundGradientFrom: "#1E2923",
+        backgroundGradientFromOpacity: 0,
+        backgroundGradientTo: "#08130D",
+        backgroundGradientToOpacity: 0.5,
+        color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
         strokeWidth: 2, // optional, default 3
-        barPercentage: 0.2,
+        barPercentage: 0.5,
         useShadowColorFromDataset: false // optional
-    };
-
+      };
+    //for contribute graph
     const commitsData = [
         { date: "2021-11-02", count: 1 },
         { date: "2021-11-03", count: 2 },
@@ -55,18 +56,6 @@ function ViewStat() {
         { date: "2021-11-30", count: 4 }
     ];
 
-    const data = {
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-            {
-                data: [20, 45, 28, 80, 99, 43],
-                color: (opacity = 0.1) => `rgba(134, 65, 244, ${opacity})`, // optional
-                strokeWidth: 3 // optional
-            }
-        ],
-        // legend: ["Rainy Days"] optional
-    };
-
     useEffect(() => {
         const currentUser = auth.currentUser;
         const unsubscribe = db
@@ -78,6 +67,8 @@ function ViewStat() {
                 },
                 (querySnapshot) => {
                     const user_mood = [];
+                    const keepMonth = [];
+                    const keepDate = [];
                     querySnapshot.forEach((doc) => {
                         let icon = "default";
                         let background = "black";
@@ -111,10 +102,13 @@ function ViewStat() {
                                 break;
                         }
                         user_mood.push({ ...doc.data(), icon, background });
+                        let create_at = doc.data().create_at.toDate();
+                        keepDate.push(dayjs(create_at).format("YYYY-MM-DD"));
+                        keepMonth.push(dayjs(create_at).format("YYYY-MM"));
                     });
-                    console.log(user_mood);
-                    // console.log(colorData)
                     setMood(user_mood);
+                    setHaveDate(keepDate);
+                    setMonth(keepMonth);
                     setIsLoading(false);
                 }
             );
@@ -129,6 +123,84 @@ function ViewStat() {
         );
     }
 
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+    var a = haveDate;
+    var uniqueDate = a.filter(onlyUnique);
+
+    var b = month;
+    var uniqueMonth = b.filter(onlyUnique);
+
+    // console.log("unique date : ", uniqueDate);
+    // console.log("unique month : ", uniqueMonth);
+
+    var testkeepMood = [];
+    var monthly = "";
+    var avgMonthValue = 0;
+    var totalAvgMonthValue = 0;
+    var useAnnual = [];
+
+    const forAnnualGraph = () => {
+        for (let i = 0; i < uniqueMonth.length; i++) {
+            testkeepMood.push(mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM") == uniqueMonth[i]));
+        }
+        testkeepMood.map((item, index) => {
+            item.map((check, num) => {
+                monthly = dayjs(check.create_at.toDate()).format("MMMM")
+                avgMonthValue += check.value
+                totalAvgMonthValue = avgMonthValue / item.length
+                totalAvgMonthValue = totalAvgMonthValue.toFixed(3)
+                // console.log(totalAvgMonthValue.toFixed(3))
+            })
+        })
+        useAnnual.push({ monthly, totalAvgMonthValue})
+        monthly = "";
+        avgMonthValue = 0;
+        totalAvgMonthValue = 0;
+    }
+    forAnnualGraph();
+
+    //for annual graph
+    // var data = {};
+    // var useData = data;
+    // useAnnual.map((item, index) => {
+    //     console.log(item.monthly)
+    //     data = {
+    //         labels: item.monthly,
+    //         datasets: [
+    //           {
+    //             data: [item.totalAvgMonthValue],
+    //             color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+    //             strokeWidth: 2 // optional
+    //           }
+    //         ],
+    //       };
+    // })
+    // console.log(data)
+    
+    var dayDateMood = "";
+    var countDateMood = 0;
+    var filterDateMood = [];
+    var useConGraph = [];
+    const forContributeGraph = () => {
+        for (let i = 0; i < uniqueDate.length; i++) {
+            filterDateMood.push(mood.filter(x => (dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == uniqueDate[i])  && (x.emotion == emoodtion)));
+        }
+        // console.log(filterDateMood)
+        filterDateMood.map((item, index) => {
+            item.map((check, index) => {
+                dayDateMood = dayjs(check.create_at.toDate()).format("YYYY-MM-DD")
+                countDateMood = item.length;
+            })
+            useConGraph.push({dayDateMood, countDateMood})
+            dayDateMood = "";
+            countDateMood = 0;
+        })
+    }
+    forContributeGraph();
+    console.log(useConGraph)
+
     return (
         <View style={styles.screen}>
             {/* upper container */}
@@ -137,6 +209,8 @@ function ViewStat() {
                     <TouchableOpacity
                         onPress={() => {
                             setSelectedMood('Terrible Mood');
+                            setEmoodtion(1);
+                            // forContributeGraph(1);
                             console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-dead-outline" color={greyColor} size={38} />
@@ -145,6 +219,8 @@ function ViewStat() {
                     <TouchableOpacity
                         onPress={() => {
                             setSelectedMood('Bad Mood');
+                            setEmoodtion(2);
+                            // forContributeGraph(2);
                             console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-sad-outline" color={greyColor} size={38} />
@@ -153,6 +229,8 @@ function ViewStat() {
                     <TouchableOpacity
                         onPress={() => {
                             setSelectedMood('Neutral Mood');
+                            setEmoodtion(3);
+                            // forContributeGraph(3);
                             console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-neutral-outline" color={greyColor} size={38} />
@@ -161,6 +239,8 @@ function ViewStat() {
                     <TouchableOpacity
                         onPress={() => {
                             setSelectedMood('Good Mood');
+                            setEmoodtion(4);
+                            // forContributeGraph(4);
                             console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-happy-outline" color={greyColor} size={38} />
@@ -169,6 +249,8 @@ function ViewStat() {
                     <TouchableOpacity
                         onPress={() => {
                             setSelectedMood('Happy Mood');
+                            setEmoodtion(5);
+                            // forContributeGraph(5);
                             console.log(selectedMood)
                         }}>
                         <MaterialCommunityIcons name="emoticon-cool-outline" color={greyColor} size={38} />
@@ -200,7 +282,7 @@ function ViewStat() {
                 <View>
                     <ContributionGraph
                         style={styles.ContributionGraph}
-                        values={commitsData}
+                        values={useConGraph}
                         endDate={new Date()}
                         numDays={105}
                         width={300}
@@ -211,14 +293,14 @@ function ViewStat() {
             </View>
 
             {/* lower container */}
-            <View style={styles.lowerContainer}>
+            {/* <View style={styles.lowerContainer}>
                 <View>
                     <View style={styles.detail2}>
                         <Text style={styles.Overall}>Overall</Text>
                     </View>
                     <LineChart
                         style={styles.LineChart}
-                        data={data}
+                        data={useData}
                         width={250}
                         height={256}
                         verticalLabelRotation={30}
@@ -227,7 +309,7 @@ function ViewStat() {
                     />
                 </View>
 
-            </View>
+            </View> */}
         </View>
     );
 };

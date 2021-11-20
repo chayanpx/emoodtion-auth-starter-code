@@ -70,7 +70,6 @@ const DashboardScreen = ({ navigation }) => {
                         let create_at = doc.data().create_at.toDate();
                         createDate.push(dayjs(create_at).format("YYYY-MM-DD"));
                     });
-                    // console.log(createDate)
                     setHaveDate(createDate)
                     setMood(user_mood);
                     setIsLoading(false);
@@ -107,7 +106,6 @@ const DashboardScreen = ({ navigation }) => {
             ngong.push(mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == unique[i]));
         }
         ngong.map((item, index) => {
-            console.log("item : ", item)
             item.map((check, num) => {
                 datee = dayjs(check.create_at.toDate()).format("YYYY-MM-DD")
                 sum += check.value
@@ -133,8 +131,6 @@ const DashboardScreen = ({ navigation }) => {
                 background = "#7BD5BC";
                 textCol = "white";
             }
-            console.log("avg : ", avg)
-            console.log("item.length : ", item.length)
             ngong1.push({ avg, datee, background, textCol })
             avg = 0;
             sum = 0;
