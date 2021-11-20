@@ -68,7 +68,6 @@ const DashboardScreen = ({ navigation }) => {
                         }
                         user_mood.push({ ...doc.data(), icon, background });
                         let create_at = doc.data().create_at.toDate();
-                        let emotion = doc.data().emotion;
                         createDate.push(dayjs(create_at).format("YYYY-MM-DD"));
                     });
                     // console.log(createDate)
@@ -102,15 +101,17 @@ const DashboardScreen = ({ navigation }) => {
     var datee = "";
     var background = "";
     var textCol = "";
+    var sum = 0;
     const check = () => {
         for (let i = 0; i < unique.length; i++) {
             ngong.push(mood.filter(x => dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == unique[i]));
         }
         ngong.map((item, index) => {
+            console.log("item : ", item)
             item.map((check, num) => {
                 datee = dayjs(check.create_at.toDate()).format("YYYY-MM-DD")
-                avg += check.value
-                avg = Math.floor(avg / item.length)
+                sum += check.value
+                avg = sum / item.length
             })
             if (avg > 0 && avg <= 20) {
                 background = "#949599";
@@ -132,12 +133,18 @@ const DashboardScreen = ({ navigation }) => {
                 background = "#7BD5BC";
                 textCol = "white";
             }
+            console.log("avg : ", avg)
+            console.log("item.length : ", item.length)
             ngong1.push({ avg, datee, background, textCol })
+            avg = 0;
+            sum = 0;
+            datee = "";
+            background = "";
+            textCol = ""
         })
     }
 
     check();
-    console.log(ngong1);
 
     var datasource = {}
     ngong1.map((item, index) => {
@@ -192,7 +199,7 @@ const DashboardScreen = ({ navigation }) => {
                                         description={item.note}
                                         icon={item.icon}
                                         moodColor={item.background}
-                                        onPress={() => console.log("Pressed")}
+                                        onPress={() => console.log(item.value)}
                                     />
                                 );
                             }
