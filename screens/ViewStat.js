@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 
 const auth = Firebase.auth();
 
-const greyColor = '#4F4F4F';
+const greyColor = '#e2e2e2';
 
 function ViewStat() {
     const [isLoading, setIsLoading] = useState(true);
@@ -18,20 +18,24 @@ function ViewStat() {
     const [month, setMonth] = useState([]);
     //for keep date existed in database
     const [haveDate, setHaveDate] = useState([]);
+    const [isMood1Click, setIsMood1Click] = useState(false);
+    const [isMood2Click, setIsMood2Click] = useState(false);
+    const [isMood3Click, setIsMood3Click] = useState(false);
+    const [isMood4Click, setIsMood4Click] = useState(false);
+    const [isMood5Click, setIsMood5Click] = useState(true);
 
     const [mood, setMood] = useState([]);
     const { colors } = useTheme();
 
-    const [selectedMood, setSelectedMood] = useState("");
+    const [selectedMood, setSelectedMood] = useState("Happy Mood");
 
     const chartConfig = {
-        backgroundColor: "#e26a00",
         backgroundGradientFrom: "#ffffff",
         backgroundGradientTo: "#ffffff",
-        color: (opacity = 0.7) => `rgba(255, 158, 177, ${opacity})`,
-        strokeWidth: 2, // optional, default 3
+        color: (opacity = 1) => `rgba(58, 58, 60, ${opacity})`,
+        strokeWidth: 2,
         barPercentage: 0.5,
-        useShadowColorFromDataset: false // optional
+        useShadowColorFromDataset: false
     };
 
     useEffect(() => {
@@ -102,10 +106,7 @@ function ViewStat() {
         );
     }
 
-    console.log("moodLength: ", mood.length)
-    console.log("haveDate: ", haveDate, "haveDateLength: ", haveDate.length)
-    console.log("month: ", month, "monthLength: ", month.length)
-
+    //remove duplicate
     function onlyUnique(value, index, self) {
         return self.indexOf(value) === index;
     }
@@ -114,11 +115,6 @@ function ViewStat() {
 
     var b = month;
     var uniqueMonth = b.filter(onlyUnique);
-
-    // console.log("unique date : ", uniqueDate);
-    console.log(month)
-    console.log("unique month : ", uniqueMonth);
-    // console.log("mood : ", mood)
 
     var testkeepMood = [];
     var labels = "";
@@ -142,16 +138,14 @@ function ViewStat() {
             console.log(data, testkeeplength)
             useAnnual.push({ labels, data })
             labels = "";
-        avgMonthValue = 0;
-        data = 0;
+            avgMonthValue = 0;
+            data = 0;
         }
-        
+
     }
     forAnnualGraph();
-    // console.log("testkepp : ", testkeepMood)
-    // console.log("useannual : ",useAnnual)
 
-    //for annual graph
+    //for set annual graph data
     var testdata = {};
     var forLabel = [];
     var forData = []
@@ -162,14 +156,13 @@ function ViewStat() {
     testdata = {
         labels: forLabel,
         datasets: [
-          {
-            data: forData,
-            color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
-            strokeWidth: 2 // optional
-          }
+            {
+                data: forData,
+                color: (opacity = 1) => `rgba(100, 62, 69, ${opacity})`,
+                strokeWidth: 2
+            }
         ],
     };
-    console.log(forLabel)
 
     var date = "";
     var count = 0;
@@ -179,7 +172,6 @@ function ViewStat() {
         for (let i = 0; i < uniqueDate.length; i++) {
             filterDateMood.push(mood.filter(x => (dayjs(x.create_at.toDate()).format("YYYY-MM-DD") == uniqueDate[i]) && (x.emotion == emoodtion)));
         }
-        // console.log(filterDateMood)
         filterDateMood.map((item, index) => {
             item.map((check, index) => {
                 date = dayjs(check.create_at.toDate()).format("YYYY-MM-DD")
@@ -193,93 +185,134 @@ function ViewStat() {
         })
     }
     forContributeGraph();
-    // console.log(useConGraph)
 
     return (
         <View style={styles.screen}>
-            {/* upper container */}
-            <View style={styles.upperContainer}>
+            {/* upper container for heatmap*/}
+            <View style={{
+                backgroundColor: colors.background,
+                borderRadius: 10,
+                width: '90%',
+                height: '50%',
+                alignSelf: 'center'
+            }}>
                 <View style={styles.moodIcon}>
                     <TouchableOpacity
                         onPress={() => {
+                            setIsMood1Click(!isMood1Click)
+                            setIsMood2Click(false)
+                            setIsMood3Click(false)
+                            setIsMood4Click(false)
+                            setIsMood5Click(false)
                             setSelectedMood('Terrible Mood');
                             setEmoodtion(1);
                             console.log(selectedMood)
                         }}>
-                        <MaterialCommunityIcons name="emoticon-dead-outline" color={greyColor} size={38} />
+                        <MaterialCommunityIcons name={isMood1Click ? "emoticon-dead" : "emoticon-dead-outline"} color={isMood1Click ? colors.mood1 : greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
+                            setIsMood1Click(false)
+                            setIsMood2Click(!isMood2Click)
+                            setIsMood3Click(false)
+                            setIsMood4Click(false)
+                            setIsMood5Click(false)
                             setSelectedMood('Bad Mood');
                             setEmoodtion(2);
-                            console.log(selectedMood)
                         }}>
-                        <MaterialCommunityIcons name="emoticon-sad-outline" color={greyColor} size={38} />
+                        <MaterialCommunityIcons name={isMood2Click ? "emoticon-sad" : "emoticon-sad-outline"} color={isMood2Click ? colors.mood2 : greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
+                            setIsMood1Click(false)
+                            setIsMood2Click(false)
+                            setIsMood3Click(!isMood3Click)
+                            setIsMood4Click(false)
+                            setIsMood5Click(false)
                             setSelectedMood('Neutral Mood');
                             setEmoodtion(3);
-                            console.log(selectedMood)
                         }}>
-                        <MaterialCommunityIcons name="emoticon-neutral-outline" color={greyColor} size={38} />
+                        <MaterialCommunityIcons name={isMood3Click ? "emoticon-neutral" : "emoticon-neutral-outline"} color={isMood3Click ? "#d7dbd9" : greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
+                            setIsMood1Click(false)
+                            setIsMood2Click(false)
+                            setIsMood3Click(false)
+                            setIsMood4Click(!isMood4Click)
+                            setIsMood5Click(false)
                             setSelectedMood('Good Mood');
                             setEmoodtion(4);
-                            console.log(selectedMood)
                         }}>
-                        <MaterialCommunityIcons name="emoticon-happy-outline" color={greyColor} size={38} />
+                        <MaterialCommunityIcons name={isMood4Click ? "emoticon-happy" : "emoticon-happy-outline"} color={isMood4Click ? colors.mood4 : greyColor} size={38} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         onPress={() => {
+                            setIsMood1Click(false)
+                            setIsMood2Click(false)
+                            setIsMood3Click(false)
+                            setIsMood4Click(false)
+                            setIsMood5Click(!isMood5Click)
                             setSelectedMood('Happy Mood');
                             setEmoodtion(5);
-                            console.log(selectedMood)
                         }}>
-                        <MaterialCommunityIcons name="emoticon-cool-outline" color={greyColor} size={38} />
+                        <MaterialCommunityIcons name={isMood5Click ? "emoticon-cool" : "emoticon-cool-outline"} color={isMood5Click ? colors.mood5 : greyColor} size={38} />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.detail1}>
-                    <Text style={styles.selectedMood}> {selectedMood} </Text>
+                    <Text style={{ marginLeft: 230, color: '#828282' }}> {selectedMood} </Text>
                 </View>
-                <View>
-                    <ScrollView
-                        style={{ flexDirection: 'row' }}
-                        horizontal={true}>
+                <ScrollView
+                    style={{ flexDirection: 'row' }}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={true}
+                >
+                    <View>
                         <ContributionGraph
                             style={styles.ContributionGraph}
                             values={useConGraph}
-                            endDate={new Date()}
-                            numDays={366}
-                            width={300}
+                            horizontal={true}
+                            endDate={new Date("2021-12-31")}
+                            numDays={186}
+                            width={650}
+                            squareSize={20}
                             height={200}
                             chartConfig={chartConfig}
                         />
-                    </ScrollView>
-
-                </View>
+                    </View>
+                </ScrollView>
             </View>
 
-            {/* lower container */}
-            <View style={styles.lowerContainer}>
+            {/* lower container for annual graph */}
+            <View style={{
+                backgroundColor: colors.background,
+                borderRadius: 10,
+                width: '90%',
+                height: '46%',
+                marginTop: 10,
+                alignSelf: 'center'
+            }}>
                 <View>
                     <View style={styles.detail2}>
                         <Text style={styles.Overall}>Overall</Text>
                     </View>
-                    <LineChart
-                        style={styles.LineChart}
-                        data={testdata}
-                        width={300}
-                        height={256}
-                        chartConfig={chartConfig}
-                        bezier
-                    />
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={true}
+                    >
+                        <LineChart
+                            style={styles.LineChart}
+                            data={testdata}
+                            width={300}
+                            height={256}
+                            chartConfig={chartConfig}
+                            bezier
+                        />
+                    </ScrollView>
                 </View>
             </View>
         </View>
@@ -303,21 +336,6 @@ const styles = StyleSheet.create({
         marginTop: 50,
         alignSelf: 'center'
     },
-    upperContainer: {
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        width: '90%',
-        height: '50%',
-        alignSelf: 'center'
-    },
-    lowerContainer: {
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        width: '90%',
-        height: '46%',
-        marginTop: 10,
-        alignSelf: 'center'
-    },
     detail1: {
         flexDirection: 'row',
     },
@@ -326,19 +344,19 @@ const styles = StyleSheet.create({
         marginTop: 15
     },
     selectedMood: {
-        marginLeft: 110,
+        marginLeft: 230,
         color: '#828282'
     },
     ContributionGraph: {
         alignSelf: 'center',
     },
     LineChart: {
-        marginTop: 2,
-        alignSelf: 'center',
+        marginTop: 10,
+        alignItems: 'center',
         justifyContent: "center",
     },
     Overall: {
-        marginLeft: 140,
+        marginLeft: 250,
         color: "#828282"
     }
 });

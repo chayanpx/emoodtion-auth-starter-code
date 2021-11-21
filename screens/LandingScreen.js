@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
   },
   imageSlider: {
     width: '90%',
-    maxHeight: '70%',
-    borderRadius: '50%',
+    // maxHeight: '70%',
+    // borderRadius: '50%',
     alignSelf: 'center'
   }
 });
